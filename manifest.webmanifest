@@ -1,0 +1,15 @@
+{
+  "name": "Козыринг 40 дней",
+  "short_name": "Козыринг 40",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf7fa",
+  "theme_color": "#5b2a8e",
+  "lang": "ru",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
