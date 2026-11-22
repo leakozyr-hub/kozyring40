@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Козыринг 40 дней</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Один мир: фиолетовый и розовый планера. Телефон, одна колонка, нижняя панель вкладок. */
+  --ink:#231a2e; --paper:#fbf7fa; --card:#ffffff; --line:#e3d7e6;
+  --plum:#5b2a8e; --rose:#df7fb6; --blush:#f6dcea; --mute:#75697f; --ok:#2f8f5b; --warn:#b4541f;
+  --display:"Sofia Sans","PT Sans Narrow","Arial Narrow",Arial,sans-serif;
+  --body:"Sofia Sans","PT Sans",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.4;-webkit-text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-bottom:76px}
+header{background:var(--plum);color:#fff;padding:16px 18px 14px}
+.brand{font-family:var(--display);font-weight:900;letter-spacing:.08em;font-size:13px;text-transform:uppercase;opacity:.85}
+.hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:4px}
+.hday{font-family:var(--display);font-weight:900;font-size:30px;letter-spacing:.03em;text-transform:uppercase;line-height:1}
+.hday span{font-weight:300}
+.hdate{font-size:14px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;text-align:right}
+.bar{height:6px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--rose);border-radius:3px}
+main{padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px}
+.view{display:none;flex-direction:column;gap:14px}
+.view.on{display:flex}
+h2{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.09em;text-transform:uppercase;text-wrap:balance}
+h2 small{font-weight:400;letter-spacing:.03em;text-transform:none;color:var(--mute);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:20px;color:var(--plum)}
+.nav button:disabled{opacity:.3}
+.nav div{text-align:center;font-weight:800;font-family:var(--display);letter-spacing:.06em;text-transform:uppercase;font-size:15px}
+.nav div small{display:block;font-weight:400;color:var(--mute);letter-spacing:.04em;font-size:12px}
+.strong{background:var(--plum);color:#fff;border-radius:14px;padding:12px 14px;font-size:14px}
+.strong b{display:block;font-family:var(--display);font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:13px;margin-bottom:2px}
+.note{background:var(--blush);border:1px solid var(--rose);color:var(--plum);border-radius:14px;padding:10px 14px;font-size:14px;font-weight:600}
+.rules5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rules5 div{border:1px solid var(--line);border-radius:10px;padding:6px 2px 7px;text-align:center;font-size:10.5px;line-height:1.15;color:var(--mute);background:var(--card)}
+.rules5 b{display:block;font-family:var(--display);font-weight:900;font-size:20px;color:var(--line)}
+.rules5 .ok{border-color:var(--plum);background:var(--blush);color:var(--plum)}
+.rules5 .ok b{color:var(--plum)}
+.meal{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.meal:first-of-type{border-top:0;padding-top:0}
+.mhead{display:flex;gap:8px;align-items:center}
+.mname{font-family:var(--display);font-weight:900;letter-spacing:.07em;text-transform:uppercase;font-size:13px;width:74px;flex:none}
+.meal.snack .mname{font-weight:600;color:var(--mute)}
+input[type=text],input[type=time],input[type=number],textarea{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff;width:100%;min-width:0;font-size:16px}
+input[type=time]{width:112px;flex:none}
+textarea{resize:vertical;min-height:62px}
+.tg{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--mute);background:#fff;min-height:36px}
+.chip[aria-pressed=true]{background:var(--plum);border-color:var(--plum);color:#fff}
+.gap{font-size:13px;color:var(--mute)}
+.gap b.ok{color:var(--ok)} .gap b.bad{color:var(--warn)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.row label{font-size:14px;font-weight:600;min-width:86px}
+.water{display:flex;gap:6px}
+.water button{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:#fff}
+.water button[aria-pressed=true]{background:var(--rose);border-color:var(--rose)}
+.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.status button{border:1.5px solid var(--line);border-radius:12px;padding:8px 2px;background:#fff;font-size:11px;line-height:1.15;color:var(--mute)}
+.status button span{display:block;font-size:26px;line-height:1.2}
+.status button[aria-pressed=true]{border-color:var(--plum);background:var(--blush);color:var(--plum);font-weight:800}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .wd{font-size:11px;text-transform:uppercase;letter-spacing:.06em;text-align:center;color:var(--mute);font-weight:600}
+.cal button{aspect-ratio:1/1.15;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 0 3px;font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
+.cal button span{font-size:19px;line-height:1;height:20px}
+.cal button.str{background:var(--blush);border-color:var(--rose)}
+.cal button.today{border:2px solid var(--plum);color:var(--plum);font-weight:800}
+.cal button.fin{background:var(--plum);color:#fff;border-color:var(--plum)}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.tally div{border:1px solid var(--line);border-radius:12px;padding:8px 2px;font-size:22px;background:#fff}
+.tally b{display:block;font-family:var(--display);font-size:20px;font-weight:900;color:var(--plum);font-variant-numeric:tabular-nums}
+.rule{display:grid;grid-template-columns:40px 1fr;gap:6px;align-items:start;border-top:1px solid var(--line);padding-top:10px}
+.rule:first-of-type{border-top:0;padding-top:0}
+.rule .n{font-family:var(--display);font-weight:900;font-size:30px;color:var(--plum);line-height:1}
+.rule b{font-family:var(--display);font-weight:900;letter-spacing:.05em;text-transform:uppercase;font-size:15px;display:block}
+.rule span{font-size:14px;color:var(--mute)}
+.hands{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hands div{background:var(--blush);border-radius:12px;padding:10px;font-size:12.5px;color:var(--mute);line-height:1.25}
+.hands b{display:block;font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:.05em;font-size:14px;color:var(--ink)}
+.hands i{font-style:normal;display:block;font-weight:900;color:var(--plum);font-size:18px}
+.p{font-size:14.5px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld>span{font-size:13px;font-weight:600}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-weight:600;text-align:left;padding:2px 3px;color:var(--mute);font-size:12px}
+td{padding:3px}
+td input{padding:7px 6px !important;font-size:15px !important}
+.btn{background:var(--plum);color:#fff;border-radius:12px;padding:12px 14px;font-weight:800;font-family:var(--display);letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.btn.alt{background:#fff;color:var(--plum);border:1.5px solid var(--plum)}
+.msg{font-size:13px;color:var(--mute);min-height:18px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:5}
+nav.tabs div{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs a{padding:12px 4px calc(12px + env(safe-area-inset-bottom,0px));text-align:center;text-decoration:none;color:var(--mute);font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.07em;text-transform:uppercase;border-top:3px solid transparent;margin-top:-1px}
+nav.tabs a.on{color:var(--plum);border-top-color:var(--plum)}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">Козыринг · челлендж 40 дней</div>
+  <div class="hrow"><div class="hday" id="hday"></div><div class="hdate" id="hdate"></div></div>
+  <div class="bar"><i id="hbar" style="width:0%"></i></div>
+</header>
+<main>
+  <div class="note" id="nostore" hidden>Этот браузер не разрешает сохранять отметки. Открой страницу в обычном браузере телефона, не в приватном режиме.</div>
+
+  <section class="view" id="v-today"></section>
+
+  <section class="view" id="v-calendar">
+    <h2>Календарь 40 дней <small>нажми на день, чтобы открыть его</small></h2>
+    <div class="card"><div class="cal" id="cal"></div></div>
+    <h2>Мои дни</h2>
+    <div class="tally" id="tally"></div>
+  </section>
+
+  <section class="view" id="v-rules">
+    <h2>Пять правил стола</h2>
+    <div class="card" id="rules"></div>
+    <h2>Тарелка по ладошкам <small>один приём пищи</small></h2>
+    <div class="hands">
+      <div><b>Овощи и зелень</b><i>2 ладони</i>свежие и приготовленные овощи, половина тарелки</div>
+      <div><b>Белок</b><i>1 ладонь</i>мясо, птица, рыба, яйца, творог</div>
+      <div><b>Углеводы</b><i>½ ладони</i>крупы, хлеб, картофель, фрукты</div>
+      <div><b>Жиры</b><i>¼ ладони</i>масло, орехи, сыр, авокадо</div>
+    </div>
+    <p class="p" style="color:var(--mute);font-size:13px">Ладонь — твоя ладонь без пальцев, порция толщиной с неё. Это ориентир для здорового человека, а не лечебная диета: если есть заболевания, сверь питание с врачом.</p>
+    <div class="card"><h2>Если день не удался</h2><p class="p">Поставь дню смайлик «завтра будет лучше» и возвращайся к правилам со следующего приёма пищи. Не с понедельника и не с завтрашнего утра.</p></div>
+    <div class="strong"><b>Проверка на прочность: 31 декабря, 1 и 2 января</b>Держим свой стол, свой отбой и свой подъём. Не пересыпаем и не расслабляемся.</div>
+  </section>
+
+  <section class="view" id="v-project">
+    <h2>Мой проект <small>тело как дело</small></h2>
+    <p class="p">Цель — это не результат. Цель — это средство, которым я достигаю результата.</p>
+    <div class="card" id="proj"></div>
+    <h2>Замеры <small>по воскресеньям, утром натощак</small></h2>
+    <div class="card"><table id="meas"></table></div>
+    <h2>Резервная копия</h2>
+    <div class="card">
+      <p class="p">Отметки хранятся только в этом телефоне и в этом браузере. Раз в неделю сохраняй копию: скопируй её и отправь себе в «Избранное».</p>
+      <button class="btn" id="bk-copy" type="button">Скопировать копию</button>
+      <textarea id="bk-text" placeholder="Чтобы восстановить, вставь сюда сохранённую копию" aria-label="Текст резервной копии"></textarea>
+      <button class="btn alt" id="bk-load" type="button">Восстановить из копии</button>
+      <div class="msg" id="bk-msg" role="status"></div>
+    </div>
+  </section>
+</main>
+</div>
+<nav class="tabs" aria-label="Разделы"><div>
+  <a href="#today" data-v="today">Сегодня</a>
+  <a href="#calendar" data-v="calendar">Календарь</a>
+  <a href="#rules" data-v="rules">Правила</a>
+  <a href="#project" data-v="project">Проект</a>
+</div></nav>
+
+<script>
+(function(){
+"use strict";
+var START=new Date(2026,10,23), DAYS=40, LAST=41, KEY="kozyring40.v1";
+var MON=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+var WDF=["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+var MEALS=[["Завтрак",0],["Перекус",1],["Обед",0],["Перекус",1],["Ужин",0]];
+var STAT=[["😃","супер-эффективный"],["😜","мне всё удалось"],["😕","ну такое"],["😠","завтра будет лучше"]];
+var RULES=[["Ем сидя за столом","Не стоя, не на ходу, не у холодильника."],
+ ["Ем приготовленную еду","Готовлю себе сама или ем то, что приготовили для меня."],
+ ["Три приёма пищи и 1–2 полезных перекуса","Завтрак, обед, ужин. Перекус — запланированный и полезный. Тортик перекусом не считается."],
+ ["Между едой 3–4 часа","Не меньше трёх часов и не больше четырёх."],
+ ["Одна тарелка, мерим ладошками","Положила, села, съела. Без добавки."]];
+var SHORT=["сидя","приготов­ленное","3 + перекусы","3–4 часа","ладошки"];
+var STRONG={39:["Новогодняя ночь","За столом ем сидя и только то, что записано в моём плане на праздники. Отбой — во время, которое я назначила себе заранее."],
+ 40:["Первый день года · финиш 40 дней","Подъём по будильнику, без пересыпания. Завтрак за столом. Вчерашние салаты и торт не доедаю на ходу."],
+ 41:["Рубеж","Возвращаюсь в обычный ритм: подъём, приёмы пищи и движение — как в лучшие дни челленджа."]};
+
+var store=true, S={days:{},proj:{},meas:{}};
+try{var raw=localStorage.getItem(KEY); if(raw) S=JSON.parse(raw); localStorage.setItem(KEY,JSON.stringify(S));}
+catch(e){store=false;}
+S.days=S.days||{}; S.proj=S.proj||{}; S.meas=S.meas||{};
+function save(){ if(!store) return; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){store=false; $("nostore").hidden=false;} }
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function dateOf(n){var d=new Date(START); d.setDate(d.getDate()+n-1); return d;}
+function todayN(){var t=new Date(); t.setHours(0,0,0,0); return Math.round((t-START)/864e5)+1;}
+function clampN(n){return Math.max(1,Math.min(LAST,n));}
+function fmt(d){return d.getDate()+" "+MON[d.getMonth()];}
+function day(n){ if(!S.days[n]) S.days[n]={m:MEALS.map(function(){return {t:"",h:"",a:0,b:0,c:0};}),w:0,mv:"",bed:"",win:"",th:"",joy:"",st:null}; return S.days[n]; }
+function has(n){return !!S.days[n];}
+function mins(h){ if(!h) return null; var p=h.split(":"); return (+p[0])*60+(+p[1]); }
+function filled(m){return !!(m.t||m.h);}
+
+/* Какие из пяти правил выдержаны в этот день */
+function rulesOf(n){
+  if(!has(n)) return [0,0,0,0,0];
+  var d=S.days[n], main=[d.m[0],d.m[2],d.m[4]], sn=[d.m[1],d.m[3]];
+  var eaten=d.m.filter(filled), allMain=main.every(filled);
+  var r1=eaten.length>0&&eaten.every(function(m){return m.a;});
+  var r2=allMain&&main.every(function(m){return m.b;});
+  var r3=allMain&&sn.filter(filled).every(function(m){return m.b;});
+  var ts=d.m.map(function(m){return mins(m.h);}).filter(function(x){return x!==null;});
+  var r4=ts.length>=3; for(var i=1;i<ts.length;i++){var g=ts[i]-ts[i-1]; if(g<180||g>240) r4=false;}
+  var r5=allMain&&main.every(function(m){return m.c;});
+  return [r1,r2,r3,r4,r5].map(Number);
+}
+function gaps(n){
+  var d=day(n), out=[], prev=null;
+  d.m.forEach(function(m){var t=mins(m.h); if(t===null) return; if(prev!==null){var g=t-prev, ok=g>=180&&g<=240; out.push('<b class="'+(ok?"ok":"bad")+'">'+Math.floor(g/60)+" ч "+(g%60?g%60+" мин":"")+"</b>");} prev=t;});
+  return out.length?"Интервалы: "+out.join(" · "):"Впиши время приёмов пищи, и здесь появятся интервалы";
+}
+
+var cur=clampN(todayN());
+
+function header(){
+  var t=todayN(), n=clampN(t);
+  $("hday").innerHTML = t<1 ? "Старт <span>23.11</span>" : t>LAST ? "Финиш" : n<=DAYS ? "День "+n+"<span>/"+DAYS+"</span>" : "Рубеж";
+  var now=new Date(); $("hdate").textContent=WDF[now.getDay()]+", "+fmt(now);
+  $("hbar").style.width=Math.max(0,Math.min(100,(t/DAYS)*100))+"%";
+}
+
+function renderToday(){
+  var n=cur, d=day(n), dt=dateOf(n), t=todayN(), rs=rulesOf(n);
+  var h='<div class="nav"><button type="button" id="prev" aria-label="Предыдущий день"'+(n<=1?" disabled":"")+'>‹</button><div>'+(n<=DAYS?"День "+n+" из "+DAYS:"Рубеж")+'<small>'+WDF[dt.getDay()]+", "+fmt(dt)+(n===t?" · сегодня":"")+'</small></div><button type="button" id="next" aria-label="Следующий день"'+(n>=LAST?" disabled":"")+'>›</button></div>';
+  if(t<1&&n===1) h+='<div class="note">Челлендж начинается 23 ноября. До старта заполни вкладку «Проект» и прочитай «Правила».</div>';
+  if(STRONG[n]) h+='<div class="strong"><b>День проверки на прочность · '+STRONG[n][0]+'</b>'+STRONG[n][1]+'</div>';
+  if(n===38) h+='<div class="note">Завтра начинается проверка на прочность. Перечитай свой план на праздники.</div>';
+  h+='<div class="rules5" id="r5">'+rs.map(function(ok,i){return '<div class="'+(ok?"ok":"")+'"><b>'+(i+1)+'</b>'+SHORT[i]+'</div>';}).join("")+'</div>';
+  h+='<div class="card">';
+  MEALS.forEach(function(M,i){
+    var m=d.m[i], sn=M[1];
+    h+='<div class="meal'+(sn?" snack":"")+'"><div class="mhead"><div class="mname">'+M[0]+'</div><input type="time" id="h'+i+'" data-m="'+i+'" data-k="h" value="'+esc(m.h)+'" aria-label="'+M[0]+': время"></div>'+
+       '<input type="text" id="t'+i+'" data-m="'+i+'" data-k="t" value="'+esc(m.t)+'" placeholder="Что я ем" aria-label="'+M[0]+': что я ем">'+
+       '<div class="tg"><button type="button" class="chip" data-m="'+i+'" data-k="a" aria-pressed="'+!!m.a+'">сидя за столом</button>'+
+       (sn?'<button type="button" class="chip" data-m="'+i+'" data-k="b" aria-pressed="'+!!m.b+'">полезный</button>'
+          :'<button type="button" class="chip" data-m="'+i+'" data-k="b" aria-pressed="'+!!m.b+'">приготовленная еда</button><button type="button" class="chip" data-m="'+i+'" data-k="c" aria-pressed="'+!!m.c+'">по ладошкам</button>')+
+       '</div></div>';
+  });
+  h+='<div class="gap" id="gaps">'+gaps(n)+'</div></div>';
+  h+='<div class="card"><div class="row"><label id="wl">Вода</label><div class="water" role="group" aria-labelledby="wl">';
+  for(var i=1;i<=8;i++) h+='<button type="button" data-w="'+i+'" aria-pressed="'+(d.w>=i)+'" aria-label="'+i+' стакан"></button>';
+  h+='</div></div><div class="row"><label for="mv">Движение</label><input type="number" id="mv" inputmode="numeric" min="0" style="width:96px" value="'+esc(d.mv)+'"><span style="font-size:14px;color:var(--mute)">минут</span></div>'+
+     '<div class="row"><label for="bed">Отбой</label><input type="time" id="bed" value="'+esc(d.bed)+'"></div></div>';
+  h+='<div class="card"><div class="fld"><span>Победа дня</span><textarea id="win">'+esc(d.win)+'</textarea></div>'+
+     '<div class="fld"><span>Благодарность дня</span><textarea id="th">'+esc(d.th)+'</textarea></div>'+
+     '<div class="fld"><span>Чем я порадовала себя сегодня (не едой)</span><textarea id="joy">'+esc(d.joy)+'</textarea></div></div>';
+  h+='<h2>Статус дня</h2><div class="status" id="st">'+STAT.map(function(s,i){return '<button type="button" data-s="'+i+'" aria-pressed="'+(d.st===i)+'"><span>'+s[0]+'</span>'+s[1]+'</button>';}).join("")+'</div>';
+  $("v-today").innerHTML=h;
+}
+function refreshMarks(){
+  var rs=rulesOf(cur), el=$("r5").children;
+  for(var i=0;i<5;i++) el[i].className=rs[i]?"ok":"";
+  $("gaps").innerHTML=gaps(cur);
+}
+
+$("v-today").addEventListener("click",function(e){
+  var b=e.target.closest("button"); if(!b) return; var d=day(cur);
+  if(b.id==="prev"){cur=clampN(cur-1); renderToday(); window.scrollTo(0,0); return;}
+  if(b.id==="next"){cur=clampN(cur+1); renderToday(); window.scrollTo(0,0); return;}
+  if(b.dataset.k){var m=d.m[+b.dataset.m]; m[b.dataset.k]=m[b.dataset.k]?0:1; b.setAttribute("aria-pressed",!!m[b.dataset.k]);}
+  else if(b.dataset.w){var w=+b.dataset.w; d.w=(d.w===w)?w-1:w; b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",d.w>=+x.dataset.w);});}
+  else if(b.dataset.s){var s=+b.dataset.s; d.st=(d.st===s)?null:s; b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",d.st===+x.dataset.s);});}
+  save(); refreshMarks();
+});
+$("v-today").addEventListener("input",function(e){
+  var t=e.target, d=day(cur);
+  if(t.dataset.k) d.m[+t.dataset.m][t.dataset.k]=t.value; else if(t.id) d[t.id]=t.value;
+  save(); refreshMarks();
+});
+
+function renderCal(){
+  var t=todayN(), h=["пн","вт","ср","чт","пт","сб","вс"].map(function(x){return '<div class="wd">'+x+'</div>';}).join("");
+  for(var n=1;n<=42;n++){
+    var dt=dateOf(n), cls=[], st=has(n)&&S.days[n].st!=null?STAT[S.days[n].st][0]:"";
+    if(n>=39&&n<=41) cls.push("str"); if(n===t) cls.push("today"); if(n===42){cls.push("fin"); st="🏁";}
+    h+='<button type="button" data-n="'+n+'" class="'+cls.join(" ")+'" aria-label="'+fmt(dt)+'"><span>'+st+'</span>'+dt.getDate()+"."+("0"+(dt.getMonth()+1)).slice(-2)+'</button>';
+  }
+  $("cal").innerHTML=h;
+  var c=[0,0,0,0]; for(var k in S.days){var s=S.days[k].st; if(s!=null) c[s]++;}
+  $("tally").innerHTML=STAT.map(function(s,i){return '<div>'+s[0]+'<b>'+c[i]+'</b></div>';}).join("");
+}
+$("cal").addEventListener("click",function(e){var b=e.target.closest("button"); if(!b) return; cur=clampN(+b.dataset.n); location.hash="today"; show("today");});
+
+$("rules").innerHTML=RULES.map(function(r,i){return '<div class="rule"><div class="n">'+(i+1)+'</div><div><b>'+r[0]+'</b><span>'+r[1]+'</span></div></div>';}).join("");
+
+var PF=[["name","Название моего проекта",0],["look","Как выглядит мой проект к 1 января",1],["feel","Как я себя в нём чувствую",1],["crit","Мой критерий: проект реализован, когда…",1],
+ ["g1","Цель 1",0],["g2","Цель 2",0],["g3","Цель 3",0],["g4","Цель 4",0],["g5","Цель 5",0],
+ ["own","Мои личные правила питания (в дополнение к пяти общим)",1],["weak","Моё слабое место в еде и что я делаю вместо этого",1],["trump","Мой козырь за 40 дней (не еда)",1]];
+function renderProj(){
+  $("proj").innerHTML=PF.map(function(f){var v=esc(S.proj[f[0]]);
+    return '<label class="fld"><span>'+f[1]+'</span>'+(f[2]?'<textarea id="p-'+f[0]+'" data-p="'+f[0]+'">'+v+'</textarea>':'<input type="text" id="p-'+f[0]+'" data-p="'+f[0]+'" value="'+v+'">')+'</label>';}).join("");
+  var rows=[["Старт",0]]; for(var w=1;w<=6;w++) rows.push(["Неделя "+w,w]);
+  $("meas").innerHTML='<tr><th></th><th>Вес</th><th>Талия</th><th>Бёдра</th></tr>'+rows.map(function(r){
+    var d=r[1]===0?dateOf(1):dateOf(r[1]*7), m=S.meas[r[1]]||{};
+    return '<tr><th scope="row">'+r[0]+'<br>'+d.getDate()+"."+("0"+(d.getMonth()+1)).slice(-2)+'</th>'+["w","t","b"].map(function(k){return '<td><input type="text" inputmode="decimal" id="ms-'+r[1]+k+'" data-w="'+r[1]+'" data-k="'+k+'" value="'+esc(m[k])+'" aria-label="'+r[0]+'"></td>';}).join("")+'</tr>';}).join("");
+}
+$("v-project").addEventListener("input",function(e){
+  var t=e.target;
+  if(t.dataset.p) S.proj[t.dataset.p]=t.value;
+  else if(t.dataset.k){ (S.meas[t.dataset.w]=S.meas[t.dataset.w]||{})[t.dataset.k]=t.value; }
+  else return;
+  save();
+});
+$("bk-copy").addEventListener("click",function(){
+  var txt=JSON.stringify(S); $("bk-text").value=txt;
+  try{navigator.clipboard.writeText(txt).then(function(){$("bk-msg").textContent="Копия скопирована. Вставь её в сообщение самой себе.";},function(){$("bk-msg").textContent="Выдели текст в поле ниже и скопируй его вручную.";});}
+  catch(e){$("bk-msg").textContent="Выдели текст в поле ниже и скопируй его вручную.";}
+});
+$("bk-load").addEventListener("click",function(){
+  try{var o=JSON.parse($("bk-text").value); if(!o||typeof o.days!=="object") throw 0; S=o; S.proj=S.proj||{}; S.meas=S.meas||{}; save(); renderAll(); $("bk-msg").textContent="Отметки восстановлены.";}
+  catch(e){$("bk-msg").textContent="Это не похоже на сохранённую копию. Вставь текст целиком.";}
+});
+
+function show(v){
+  if(["today","calendar","rules","project"].indexOf(v)<0) v="today";
+  document.querySelectorAll(".view").forEach(function(x){x.classList.toggle("on",x.id==="v-"+v);});
+  document.querySelectorAll("nav.tabs a").forEach(function(a){a.classList.toggle("on",a.dataset.v===v); if(a.dataset.v===v) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");});
+  if(v==="today") renderToday(); if(v==="calendar") renderCal();
+  window.scrollTo(0,0);
+}
+function renderAll(){ header(); renderProj(); show((location.hash||"#today").slice(1)); }
+window.addEventListener("hashchange",function(){show((location.hash||"#today").slice(1));});
+if(!store) $("nostore").hidden=false;
+renderAll();
+})();
+</script>
+</body>
+</html>
