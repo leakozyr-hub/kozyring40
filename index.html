@@ -66,6 +66,9 @@ textarea{resize:vertical;min-height:62px}
 .tg{display:flex;gap:6px;flex-wrap:wrap}
 .chip{border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--mute);background:#fff;min-height:36px}
 .chip[aria-pressed=true]{background:var(--plum);border-color:var(--plum);color:#fff}
+.plan{background:var(--blush);border-radius:12px;padding:9px 11px;font-size:14.5px;line-height:1.35;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.plan b{font-family:var(--display);font-weight:900;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--plum)}
+.plan .chip{border-color:var(--plum);color:var(--plum)}
 .gap{font-size:13px;color:var(--mute)}
 .gap b.ok{color:var(--ok)} .gap b.bad{color:var(--warn)}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -221,7 +224,7 @@ var STRONG={39:["Новогодняя ночь","За столом ем сидя
 var store=true, S={days:{},proj:{},meas:{}};
 try{var raw=localStorage.getItem(KEY); if(raw) S=JSON.parse(raw); localStorage.setItem(KEY,JSON.stringify(S));}
 catch(e){store=false;}
-S.days=S.days||{}; S.proj=S.proj||{}; S.meas=S.meas||{};
+S.days=S.days||{}; S.proj=S.proj||{}; S.meas=S.meas||{}; S.plan=S.plan||{};
 function save(){ if(!store) return; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){store=false; $("nostore").hidden=false;} }
 
 function $(id){return document.getElementById(id);}
@@ -269,11 +272,14 @@ function renderToday(){
   if(t<1&&n===1) h+='<div class="note">Челлендж начинается 23 ноября. До старта заполни вкладку «Проект» и прочитай «Правила».</div>';
   if(STRONG[n]) h+='<div class="strong"><b>День проверки на прочность · '+STRONG[n][0]+'</b>'+STRONG[n][1]+'</div>';
   if(n===38) h+='<div class="note">Завтра начинается проверка на прочность. Перечитай свой план на праздники.</div>';
+  var P=S.plan[n];
+  if(P&&P.note) h+='<div class="note">'+esc(P.note)+'</div>';
   h+='<div class="rules5" id="r5">'+rs.map(function(ok,i){return '<div class="'+(ok?"ok":"")+'"><b>'+(i+1)+'</b>'+SHORT[i]+'</div>';}).join("")+'</div>';
   h+='<div class="card">';
   MEALS.forEach(function(M,i){
     var m=d.m[i], sn=M[1];
     h+='<div class="meal'+(sn?" snack":"")+'"><div class="mhead"><div class="mname">'+M[0]+'</div><input type="time" id="h'+i+'" data-m="'+i+'" data-k="h" value="'+esc(m.h)+'" aria-label="'+M[0]+': время"></div>'+
+       (P&&P.m&&P.m[i]?'<div class="plan"><b>Мой план'+(P.h&&P.h[i]?" · "+esc(P.h[i]):"")+'</b>'+esc(P.m[i])+(filled(m)?'':'<button type="button" class="chip" data-plan="'+i+'">✓ съела по плану</button>')+'</div>':'')+
        '<input type="text" id="t'+i+'" data-m="'+i+'" data-k="t" value="'+esc(m.t)+'" placeholder="Что я ем" aria-label="'+M[0]+': что я ем">'+
        '<div class="tg"><button type="button" class="chip" data-m="'+i+'" data-k="a" aria-pressed="'+!!m.a+'">сидя за столом</button>'+
        (sn?'<button type="button" class="chip" data-m="'+i+'" data-k="b" aria-pressed="'+!!m.b+'">полезный</button>'
@@ -301,6 +307,7 @@ $("v-today").addEventListener("click",function(e){
   var b=e.target.closest("button"); if(!b) return; var d=day(cur);
   if(b.id==="prev"){cur=clampN(cur-1); renderToday(); window.scrollTo(0,0); return;}
   if(b.id==="next"){cur=clampN(cur+1); renderToday(); window.scrollTo(0,0); return;}
+  if(b.dataset.plan){var pi=+b.dataset.plan, pm=d.m[pi], PP=S.plan[cur]||{}; if(!pm.t) pm.t="по плану"; if(!pm.h&&PP.h&&PP.h[pi]) pm.h=PP.h[pi]; save(); renderToday(); return;}
   if(b.dataset.k){var m=d.m[+b.dataset.m]; m[b.dataset.k]=m[b.dataset.k]?0:1; b.setAttribute("aria-pressed",!!m[b.dataset.k]);}
   else if(b.dataset.w){var w=+b.dataset.w; d.w=(d.w===w)?w-1:w; b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",d.w>=+x.dataset.w);});}
   else if(b.dataset.s){var s=+b.dataset.s; d.st=(d.st===s)?null:s; b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",d.st===+x.dataset.s);});}
@@ -365,6 +372,9 @@ function show(v){
 function renderAll(){ header(); renderProj(); show((location.hash||"#today").slice(1)); }
 window.addEventListener("hashchange",function(){show((location.hash||"#today").slice(1));});
 if(!store) $("nostore").hidden=false;
+(function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; if(!code||!window.fetch) return;
+  fetch("m/"+code+".json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){ if(!j||!j.days) return;
+    S.plan=j.days; S.planCode=code; save(); if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); renderToday(); }).catch(function(){});})();
 renderAll();
 })();
 </script>
