@@ -387,6 +387,10 @@ $("pm-load").addEventListener("click",function(){ var c=$("pm-code").value.trim(
   $("pm-msg").textContent="Загружаю…"; loadPlan(c,function(ok){$("pm-msg").textContent=ok?"Готово, меню загружено.":"Не получилось: проверь код и интернет.";}); });
 (function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; planState(); if(!code) return;
   loadPlan(code,function(){ if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); });})();
+/* Самообновление: если на сайте версия новее, перезагружаем страницу в обход кэша */
+(function(){var V="4"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
+  if(!t||t===V) return; try{ if(sessionStorage.getItem("kz-v")===t) return; sessionStorage.setItem("kz-v",t);}catch(e){}
+  location.replace(location.pathname+"?v="+encodeURIComponent(t)+location.hash); }).catch(function(){});})();
 renderAll();
 })();
 </script>
