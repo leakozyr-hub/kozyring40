@@ -185,6 +185,13 @@ nav.tabs a.on{color:var(--plum);border-top-color:var(--plum)}
     <div class="card" id="proj"></div>
     <h2>Замеры <small>по воскресеньям, утром натощак</small></h2>
     <div class="card"><table id="meas"></table></div>
+    <h2>Личное меню</h2>
+    <div class="card">
+      <p class="p" id="pm-state"></p>
+      <input type="text" id="pm-code" placeholder="Код меню" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Код личного меню">
+      <button class="btn" id="pm-load" type="button">Загрузить меню</button>
+      <div class="msg" id="pm-msg" role="status"></div>
+    </div>
     <h2>Резервная копия</h2>
     <div class="card">
       <p class="p">Отметки хранятся только в этом телефоне и в этом браузере. Раз в неделю сохраняй копию: скопируй её и отправь себе в «Избранное».</p>
@@ -372,9 +379,14 @@ function show(v){
 function renderAll(){ header(); renderProj(); show((location.hash||"#today").slice(1)); }
 window.addEventListener("hashchange",function(){show((location.hash||"#today").slice(1));});
 if(!store) $("nostore").hidden=false;
-(function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; if(!code||!window.fetch) return;
-  fetch("m/"+code+".json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){ if(!j||!j.days) return;
-    S.plan=j.days; S.planCode=code; save(); if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); renderToday(); }).catch(function(){});})();
+function loadPlan(code,done){ if(!window.fetch){done&&done(false);return;}
+  fetch("m/"+code+".json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){ if(!j||!j.days){done&&done(false);return;}
+    S.plan=j.days; S.planCode=code; save(); renderToday(); planState(); done&&done(true); }).catch(function(){done&&done(false);}); }
+function planState(){ var n=Object.keys(S.plan||{}).length; $("pm-state").textContent=n?"Меню загружено на весь челлендж. Смотри вкладку «Сегодня» — блок «Мой план» под каждым приёмом пищи.":"Если у тебя есть код личного меню, впиши его сюда."; }
+$("pm-load").addEventListener("click",function(){ var c=$("pm-code").value.trim().toLowerCase(); if(!/^[a-z0-9]{4,20}$/.test(c)){$("pm-msg").textContent="Код — это 4–20 латинских букв и цифр.";return;}
+  $("pm-msg").textContent="Загружаю…"; loadPlan(c,function(ok){$("pm-msg").textContent=ok?"Готово, меню загружено.":"Не получилось: проверь код и интернет.";}); });
+(function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; planState(); if(!code) return;
+  loadPlan(code,function(){ if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); });})();
 renderAll();
 })();
 </script>
