@@ -232,6 +232,16 @@ var store=true, S={days:{},proj:{},meas:{}};
 try{var raw=localStorage.getItem(KEY); if(raw) S=JSON.parse(raw); localStorage.setItem(KEY,JSON.stringify(S));}
 catch(e){store=false;}
 S.days=S.days||{}; S.proj=S.proj||{}; S.meas=S.meas||{}; S.plan=S.plan||{};
+/* Личные данные из ссылки вида #d=…: остаются в телефоне, на сервер не уходят */
+(function(){var m=/^#d=([A-Za-z0-9_-]+)$/.exec(location.hash); if(!m) return;
+  try{ var j=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,"+").replace(/_/g,"/"))))), k;
+    if(j.proj) for(k in j.proj) S.proj[k]=j.proj[k];
+    if(j.meas) for(k in j.meas) S.meas[k]=j.meas[k];
+    if(j.days) for(k in j.days) S.days[k]=j.days[k];
+    if(j.code) S.planCode=j.code;
+    localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){}
+  try{ history.replaceState(null,"",location.pathname+location.search+"#today"); }catch(e){ location.hash="today"; }
+})();
 function save(){ if(!store) return; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){store=false; $("nostore").hidden=false;} }
 
 function $(id){return document.getElementById(id);}
@@ -388,7 +398,7 @@ $("pm-load").addEventListener("click",function(){ var c=$("pm-code").value.trim(
 (function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; planState(); if(!code) return;
   loadPlan(code,function(){ if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); });})();
 /* Самообновление: если на сайте версия новее, перезагружаем страницу в обход кэша */
-(function(){var V="5"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
+(function(){var V="6"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
   if(!t||t===V) return; try{ if(sessionStorage.getItem("kz-v")===t) return; sessionStorage.setItem("kz-v",t);}catch(e){}
   location.replace(location.pathname+"?v="+encodeURIComponent(t)+location.hash); }).catch(function(){});})();
 renderAll();
