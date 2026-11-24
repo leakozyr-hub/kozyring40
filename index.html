@@ -188,7 +188,7 @@ nav.tabs a.on{color:var(--plum);border-top-color:var(--plum)}
     <h2>Личное меню</h2>
     <div class="card">
       <p class="p" id="pm-state"></p>
-      <input type="text" id="pm-code" placeholder="Код меню" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Код личного меню">
+      <input type="text" id="pm-code" placeholder="Код или личная ссылка" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Код личного меню">
       <button class="btn" id="pm-load" type="button">Загрузить меню</button>
       <div class="msg" id="pm-msg" role="status"></div>
     </div>
@@ -390,27 +390,31 @@ function renderAll(){ header(); renderProj(); show((location.hash||"#today").sli
 window.addEventListener("hashchange",function(){show((location.hash||"#today").slice(1));});
 if(!store) $("nostore").hidden=false;
 /* Личные данные по ссылке #p=файл-ключ: на сайте лежит только шифр, ключ остаётся в ссылке и на сервер не уходит */
-(function(){var m=/^#p=([a-f0-9]{6})-([a-f0-9]{32})$/.exec(location.hash); if(!m||!window.crypto||!crypto.subtle) return;
-  try{ history.replaceState(null,"",location.pathname+location.search+"#today"); }catch(e){}
-  var kb=new Uint8Array(16); for(var i=0;i<16;i++) kb[i]=parseInt(m[2].substr(i*2,2),16);
-  fetch("m/"+m[1]+".bin",{cache:"no-store"}).then(function(r){return r.arrayBuffer();}).then(function(buf){
+function loadPersonal(id,key,done){ if(!window.crypto||!crypto.subtle||!window.fetch){done&&done(false);return;}
+  var kb=new Uint8Array(16); for(var i=0;i<16;i++) kb[i]=parseInt(key.substr(i*2,2),16);
+  fetch("m/"+id+".bin",{cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer();}).then(function(buf){
     return crypto.subtle.importKey("raw",kb,{name:"AES-CBC"},false,["decrypt"]).then(function(k){return crypto.subtle.decrypt({name:"AES-CBC",iv:new Uint8Array(buf,0,16)},k,new Uint8Array(buf,16));});
   }).then(function(pt){ var j=JSON.parse(new TextDecoder().decode(pt)), k;
     if(j.proj) for(k in j.proj) S.proj[k]=j.proj[k];
     if(j.meas) for(k in j.meas) S.meas[k]=j.meas[k];
     if(j.days) for(k in j.days) S.days[k]=j.days[k];
-    save(); renderAll(); if(j.code) loadPlan(j.code);
-  }).catch(function(){});})();
+    save(); renderAll(); if(j.code) loadPlan(j.code); done&&done(true);
+  }).catch(function(){done&&done(false);}); }
+(function(){var m=/^#p=([a-f0-9]{6})-([a-f0-9]{32})$/.exec(location.hash); if(!m) return;
+  try{ history.replaceState(null,"",location.pathname+location.search+"#today"); }catch(e){}
+  loadPersonal(m[1],m[2]); })();
 function loadPlan(code,done){ if(!window.fetch){done&&done(false);return;}
   fetch("m/"+code+".json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){ if(!j||!j.days){done&&done(false);return;}
     S.plan=j.days; S.planCode=code; if(j.proj){for(var k in j.proj){ if(!S.proj[k]) S.proj[k]=j.proj[k]; } renderProj();} save(); renderToday(); planState(); done&&done(true); }).catch(function(){done&&done(false);}); }
 function planState(){ var n=Object.keys(S.plan||{}).length; $("pm-state").textContent=n?"Меню загружено на весь челлендж. Смотри вкладку «Сегодня» — блок «Мой план» под каждым приёмом пищи.":"Если у тебя есть код личного меню, впиши его сюда."; }
-$("pm-load").addEventListener("click",function(){ var c=$("pm-code").value.trim().toLowerCase(); if(!/^[a-z0-9]{4,20}$/.test(c)){$("pm-msg").textContent="Код — это 4–20 латинских букв и цифр.";return;}
+$("pm-load").addEventListener("click",function(){ var c=$("pm-code").value.trim().toLowerCase().replace(/^.*#p=/,""); var pm=/^([a-f0-9]{6})-([a-f0-9]{32})$/.exec(c);
+  if(pm){ $("pm-msg").textContent="Загружаю…"; loadPersonal(pm[1],pm[2],function(ok){$("pm-msg").textContent=ok?"Готово: проект, замеры, дни и меню загружены.":"Не получилось: проверь код и интернет.";}); return; }
+  if(!/^[a-z0-9]{4,20}$/.test(c)){$("pm-msg").textContent="Проверь код: вставь его целиком.";return;}
   $("pm-msg").textContent="Загружаю…"; loadPlan(c,function(ok){$("pm-msg").textContent=ok?"Готово, меню загружено.":"Не получилось: проверь код и интернет.";}); });
 (function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; planState(); if(!code) return;
   loadPlan(code,function(){ if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); });})();
 /* Самообновление: если на сайте версия новее, перезагружаем страницу в обход кэша */
-(function(){var V="7"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
+(function(){var V="8"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
   if(!t||t===V) return; try{ if(sessionStorage.getItem("kz-v")===t) return; sessionStorage.setItem("kz-v",t);}catch(e){}
   location.replace(location.pathname+"?v="+encodeURIComponent(t)+location.hash); }).catch(function(){});})();
 renderAll();
