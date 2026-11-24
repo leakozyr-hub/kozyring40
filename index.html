@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Козыринг 40">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
 <style>
@@ -133,6 +134,7 @@ nav.tabs a.on{color:var(--plum);border-top-color:var(--plum)}
   <div class="bar"><i id="hbar" style="width:0%"></i></div>
 </header>
 <main>
+  <div class="note" id="ioshint" hidden>Чтобы поставить на экран со всеми данными: нажми «Поделиться» внизу → «На экран „Домой“» → «Добавить». Открывай потом со значка.</div>
   <div class="note" id="nostore" hidden>Этот браузер не разрешает сохранять отметки. Открой страницу в обычном браузере телефона, не в приватном режиме.</div>
 
   <section class="view" id="v-today"></section>
@@ -347,7 +349,7 @@ function renderCal(){
   var c=[0,0,0,0]; for(var k in S.days){var s=S.days[k].st; if(s!=null) c[s]++;}
   $("tally").innerHTML=STAT.map(function(s,i){return '<div>'+s[0]+'<b>'+c[i]+'</b></div>';}).join("");
 }
-$("cal").addEventListener("click",function(e){var b=e.target.closest("button"); if(!b) return; cur=clampN(+b.dataset.n); location.hash="today"; show("today");});
+$("cal").addEventListener("click",function(e){var b=e.target.closest("button"); if(!b) return; cur=clampN(+b.dataset.n); if(!window.KZ_KEEP) location.hash="today"; show("today");});
 
 $("rules").innerHTML=RULES.map(function(r,i){return '<div class="rule"><div class="n">'+(i+1)+'</div><div><b>'+r[0]+'</b><span>'+r[1]+'</span></div></div>';}).join("");
 
@@ -386,8 +388,10 @@ function show(v){
   if(v==="today") renderToday(); if(v==="calendar") renderCal();
   window.scrollTo(0,0);
 }
-function renderAll(){ header(); renderProj(); show((location.hash||"#today").slice(1)); }
-window.addEventListener("hashchange",function(){show((location.hash||"#today").slice(1));});
+function curView(){ var h=(location.hash||"#today").slice(1); return /^(today|calendar|rules|project)$/.test(h)?h:"today"; }
+function renderAll(){ header(); renderProj(); show(curView()); }
+window.addEventListener("hashchange",function(){show(curView());});
+document.querySelector("nav.tabs").addEventListener("click",function(e){ var a=e.target.closest("a"); if(a&&window.KZ_KEEP){ e.preventDefault(); show(a.dataset.v); window.scrollTo(0,0); } });
 if(!store) $("nostore").hidden=false;
 /* Личные данные по ссылке #p=файл-ключ: на сайте лежит только шифр, ключ остаётся в ссылке и на сервер не уходит */
 function loadPersonal(id,key,done){ if(!window.crypto||!crypto.subtle||!window.fetch){done&&done(false);return;}
@@ -401,8 +405,12 @@ function loadPersonal(id,key,done){ if(!window.crypto||!crypto.subtle||!window.f
     save(); renderAll(); if(j.code) loadPlan(j.code); done&&done(true);
   }).catch(function(){done&&done(false);}); }
 (function(){var m=/^#p=([a-f0-9]{6})-([a-f0-9]{32})$/.exec(location.hash); if(!m) return;
-  try{ history.replaceState(null,"",location.pathname+location.search+"#today"); }catch(e){}
-  loadPersonal(m[1],m[2]); })();
+  var ios=("standalone" in navigator), app=ios&&navigator.standalone;
+  if(ios&&!app){ /* Safari на iPhone: ссылку оставляем в адресе — её запомнит значок на экране «Домой» */
+    window.KZ_KEEP=1; var ml=document.querySelector('link[rel="manifest"]'); if(ml) ml.parentNode.removeChild(ml); $("ioshint").hidden=false; }
+  else { try{ history.replaceState(null,"",location.pathname+location.search+"#today"); }catch(e){} }
+  if(S.imp===m[1]) return; /* в эту копию уже загружено — записи не затираем */
+  loadPersonal(m[1],m[2],function(ok){ if(ok){ S.imp=m[1]; save(); } }); })();
 function loadPlan(code,done){ if(!window.fetch){done&&done(false);return;}
   fetch("m/"+code+".json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){ if(!j||!j.days){done&&done(false);return;}
     S.plan=j.days; S.planCode=code; if(j.proj){for(var k in j.proj){ if(!S.proj[k]) S.proj[k]=j.proj[k]; } renderProj();} save(); renderToday(); planState(); done&&done(true); }).catch(function(){done&&done(false);}); }
@@ -414,7 +422,7 @@ $("pm-load").addEventListener("click",function(){ var c=$("pm-code").value.trim(
 (function(){var q=/[?&]m=([a-z0-9]{4,20})/.exec(location.search), code=q?q[1]:S.planCode; planState(); if(!code) return;
   loadPlan(code,function(){ if(q&&history.replaceState) history.replaceState(null,"",location.pathname+location.hash); });})();
 /* Самообновление: если на сайте версия новее, перезагружаем страницу в обход кэша */
-(function(){var V="8"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
+(function(){var V="9"; if(!window.fetch) return; fetch("v.txt?"+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():"";}).then(function(t){t=t.trim();
   if(!t||t===V) return; try{ if(sessionStorage.getItem("kz-v")===t) return; sessionStorage.setItem("kz-v",t);}catch(e){}
   location.replace(location.pathname+"?v="+encodeURIComponent(t)+location.hash); }).catch(function(){});})();
 renderAll();
